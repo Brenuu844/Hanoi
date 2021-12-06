@@ -1,12 +1,27 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#define NUMBER_DISCS 2
+/* ######### CONFIG ######### */
+
+#define IS_TO_PRINT_BOARD 1
+#define NUMBER_DISCS 7
+
+/* ########################## */
+
 #define NUMBER_PINS 3
+#define FIRST_PIN 0
+#define MIDDLE_PIN 1
+#define LAST_PIN 2
+#define DIRECTION_LEFT 1
+#define DIRECTION_RIGHT (-1)
+
+#define UNUSED_PARAMETER(x) (void)x
+
+#define INVERT_DIRECTION(x) x *= (-1)
 
 typedef struct game_state
 {
-    unsigned int pins[NUMBER_DISCS][NUMBER_PINS];
+    int pins[NUMBER_DISCS][NUMBER_PINS];
     int positionDiscInPin[NUMBER_PINS];
 } GameState;
 
@@ -30,6 +45,7 @@ initGame(GameState *board)
 void
 printBoard(GameState *board)
 {
+#if IS_TO_PRINT_BOARD == 1
     int i;
     int j;
 
@@ -42,6 +58,9 @@ printBoard(GameState *board)
         printf("\n");
     }
     printf("\n");
+#else /*#if IS_TO_PRINT_BOARD == 1 */
+    UNUSED_PARAMETER(board);
+#endif /*#else IS_TO_PRINT_BOARD == 1 */
 }
 
 void
@@ -52,27 +71,37 @@ solveGame(GameState *board, int lastMoviment[2])
 
     currentMoviment[0] = lastMoviment[0];
     currentMoviment[1] = lastMoviment[1];
+
     if (false == (board->pins[0][0] == 0 &&
                   (board->pins[0][1] == 0 || board->pins[0][2] == 0)))
     {
-        if (direction > 0)
+        if (lastMoviment[0] == MIDDLE_PIN)
         {
-            if (lastMoviment[0] == NUMBER_PINS - 2)
+            if(direction == DIRECTION_LEFT)
             {
-                direction = -1;
-                currentMoviment[0] = NUMBER_PINS - 1;
-                currentMoviment[1] = NUMBER_PINS - 2;
-            }
-            else if ((lastMoviment[1] == NUMBER_PINS - 1 && direction == 1) ||
-                     (lastMoviment[1] == 0 && direction == 0))
-            {
-                currentMoviment[0] += direction;
-                currentMoviment[1] = currentMoviment[0] + direction;
+                INVERT_DIRECTION(direction);
+                currentMoviment[0] = LAST_PIN;
+                currentMoviment[1] = FIRST_PIN;
             }
             else
             {
-                currentMoviment[1] += direction;
+                INVERT_DIRECTION(direction);
+                currentMoviment[0] = FIRST_PIN;
+                currentMoviment[1] = FIRST_PIN;
             }
+        }
+        else if ((lastMoviment[1] == LAST_PIN && direction == DIRECTION_LEFT) || (lastMoviment[1] == MIDDLE_PIN && direction == DIRECTION_RIGHT))
+        {
+            currentMoviment[0] += direction;
+            currentMoviment[1] = currentMoviment[0] + direction;
+        }
+        else if (lastMoviment[0] == lastMoviment[1])
+        {
+            currentMoviment[1] += direction;
+        }
+        else
+        {
+            currentMoviment[1]++;
         }
 
         if (board->positionDiscInPin[currentMoviment[0]] >= 0)
@@ -93,9 +122,17 @@ solveGame(GameState *board, int lastMoviment[2])
                 board->pins[board->positionDiscInPin[currentMoviment[0]]]
                            [currentMoviment[0]] = 0;
                 board->positionDiscInPin[currentMoviment[0]]--;
-                printf("%d->%d\n", currentMoviment[0], currentMoviment[1]);
-                currentMoviment[0] = 0;
-                currentMoviment[1] = 0;
+                printf("%d->%d\n", currentMoviment[0] + 1, currentMoviment[1] + 1);
+                if (direction == DIRECTION_LEFT)
+                {
+                    currentMoviment[0] = FIRST_PIN;
+                    currentMoviment[1] = FIRST_PIN;
+                }
+                else
+                {
+                    currentMoviment[0] = LAST_PIN;
+                    currentMoviment[1] = LAST_PIN;
+                }
                 solveGame(board, currentMoviment);
             }
             else
