@@ -4,7 +4,7 @@
 /* ######### CONFIG ######### */
 
 #define IS_TO_PRINT_BOARD 1
-#define NUMBER_DISCS 7
+#define NUMBER_DISCS 4
 
 /* ########################## */
 
@@ -67,6 +67,7 @@ void
 solveGame(GameState *board, int lastMoviment[2])
 {
     static int direction = 1;
+    static int lastValidMoviment[2] = {-1, -1};
     int currentMoviment[2];
 
     currentMoviment[0] = lastMoviment[0];
@@ -104,7 +105,7 @@ solveGame(GameState *board, int lastMoviment[2])
             currentMoviment[1]++;
         }
 
-        if (board->positionDiscInPin[currentMoviment[0]] >= 0)
+        if (board->positionDiscInPin[currentMoviment[0]] >= 0 && lastValidMoviment[1] != currentMoviment[0])
         {
             if ((board->pins[board->positionDiscInPin[currentMoviment[0]]]
                             [currentMoviment[0]] <
@@ -113,7 +114,12 @@ solveGame(GameState *board, int lastMoviment[2])
                 (board->pins[board->positionDiscInPin[currentMoviment[1]]]
                             [currentMoviment[1]] == 0))
             {
+                printf("%d->%d\n", currentMoviment[0] + 1, currentMoviment[1] + 1);
                 printBoard(board);
+
+                lastValidMoviment[0] = currentMoviment[0];
+                lastValidMoviment[1] = currentMoviment[1];
+
                 board->positionDiscInPin[currentMoviment[1]]++;
                 board->pins[board->positionDiscInPin[currentMoviment[1]]]
                            [currentMoviment[1]] =
@@ -122,7 +128,7 @@ solveGame(GameState *board, int lastMoviment[2])
                 board->pins[board->positionDiscInPin[currentMoviment[0]]]
                            [currentMoviment[0]] = 0;
                 board->positionDiscInPin[currentMoviment[0]]--;
-                printf("%d->%d\n", currentMoviment[0] + 1, currentMoviment[1] + 1);
+
                 if (direction == DIRECTION_LEFT)
                 {
                     currentMoviment[0] = FIRST_PIN;
@@ -133,17 +139,10 @@ solveGame(GameState *board, int lastMoviment[2])
                     currentMoviment[0] = LAST_PIN;
                     currentMoviment[1] = LAST_PIN;
                 }
-                solveGame(board, currentMoviment);
-            }
-            else
-            {
-                solveGame(board, currentMoviment);
             }
         }
-        else
-        {
-            solveGame(board, currentMoviment);
-        }
+
+        solveGame(board, currentMoviment);
     }
 }
 
@@ -154,8 +153,9 @@ main()
     int position[2] = {0, 0};
 
     initGame(&board);
+    printf("---- Start ----\n");
     solveGame(&board, position);
-    printf("Finish\n");
+    printf("---- Finish ----\n");
     printBoard(&board);
 
     return 0;
