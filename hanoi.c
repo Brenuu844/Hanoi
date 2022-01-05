@@ -43,6 +43,25 @@ initGame(GameState *board)
     board->positionDiscInPin[2] = -1;
 }
 
+int
+getFirstDiscInPin(GameState *board, int pin)
+{
+    return board->pins[board->positionDiscInPin[pin]][pin];
+}
+
+bool
+isValidMoviment(GameState *board, unsigned int from, unsigned int dest)
+{
+    bool rc = true;
+
+    if(getFirstDiscInPin(board, from) > getFirstDiscInPin(board, dest))
+    {
+        rc = false;
+    }
+
+    return rc;
+}
+
 void
 printBoard(GameState *board)
 {
