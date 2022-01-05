@@ -15,21 +15,18 @@
 #define DIRECTION_LEFT 1
 #define DIRECTION_RIGHT (-1)
 
-#define UNUSED_PARAMETER(x) (void)x
-
-#define INVERT_DIRECTION(x) x *= (-1)
 
 typedef struct game_state
 {
     int pins[NUMBER_MAX_DISCS][NUMBER_PINS];
     int positionDiscInPin[NUMBER_PINS];
-    unsigned int numberDiscs;
+    int numberDiscs;
 } GameState;
 
 void
 initGame(GameState *board)
 {
-    unsigned int i;
+    int i;
 
     for (i = 0; i < board->numberDiscs; i++)
     {
@@ -50,7 +47,7 @@ getFirstDiscInPin(GameState *board, int pin)
 }
 
 bool
-isValidMoviment(GameState *board, unsigned int from, unsigned int dest)
+isValidMoviment(GameState *board, int from, int dest)
 {
     bool rc = true;
 
@@ -83,10 +80,23 @@ printBoard(GameState *board)
 #endif /*#else IS_TO_PRINT_BOARD == 1 */
 }
 
+bool
+move(GameState *board, int from, int dest)
+{
+    bool rc = false;
+    if((rc = isValidMoviment(board, from, dest)))
+    {
+        board->pins[board->positionDiscInPin[dest] + 1][dest] = getFirstDiscInPin(board, from);
+        board->pins[board->positionDiscInPin[from]][from] = 0;
+        board->positionDiscInPin[from]--;
+        board->positionDiscInPin[dest]++;
+    }
+}
+
 void
 solveGame(GameState *board)
 {
-
+    move(board, 0, 2);
 }
 
 int
